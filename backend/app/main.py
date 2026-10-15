@@ -92,6 +92,9 @@ class RuleUpdateRequest(BaseModel):
     min_weight_kg: float
     actor_id: str = "ADMIN-01"
 
+class DemoScenarioRequest(BaseModel):
+    scenario: str
+
 # --- API Endpoints ---
 
 @app.get("/api/health")
@@ -108,7 +111,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Keep connection alive with heartbeat
             data = await websocket.receive_text()
             if data == "ping":
                 await websocket.send_text(json.dumps({"type": "PONG", "timestamp": date.today().isoformat()}))
@@ -120,7 +122,6 @@ async def websocket_endpoint(websocket: WebSocket):
 # 1. Events & Forecaster
 @app.get("/api/events")
 def get_transfusion_events(patient_id: Optional[str] = None):
-    """Retrieve upcoming transfusion events with coverage status and timeline risk."""
     events = list(db.events.values())
     if patient_id:
         events = [e for e in events if e["patient_id"] == patient_id]
@@ -137,7 +138,6 @@ def get_transfusion_events(patient_id: Optional[str] = None):
         ev_copy["blood_group"] = f"{p.get('abo', '')}{p.get('rh', '')}"
         ev_copy["centre_name"] = db.centres.get(ev["centre_id"], {}).get("name", ev["centre_id"])
         
-        # Calculate timeline
         days_left = (date.fromisoformat(ev["planned_date"]) - today).days
         coverage_ratio = ev["coverage_count"] / max(1, ev["units_required"])
         ev_copy["timeline"] = NotifierService.get_timeline_status(days_left, coverage_ratio)
@@ -147,7 +147,6 @@ def get_transfusion_events(patient_id: Optional[str] = None):
 
 @app.get("/api/events/{event_id}")
 def get_event_detail(event_id: str):
-    """Detail view for an event including invited donors and escalation recommendations."""
     if event_id not in db.events:
         raise HTTPException(status_code=404, detail="Event not found")
     
@@ -155,11 +154,9 @@ def get_event_detail(event_id: str):
     patient = db.patients.get(event["patient_id"])
     event_invitations = [inv for inv in db.invitations.values() if inv["event_id"] == event_id]
     
-    # Check escalation state
     today = date.today()
     escalation_report = escalation_engine.evaluate_escalation(event, event_invitations, today)
 
-    # Enrich invitations
     invites_enriched = []
     for inv in event_invitations:
         donor = db.donors.get(inv["donor_id"], {})
@@ -181,20 +178,14 @@ def get_event_detail(event_id: str):
 # 2. Patients & Caregiver View
 @app.get("/api/patients")
 def get_patients():
-    """List patient care plans (pseudonymized)."""
     return {"patients": list(db.patients.values())}
 
 @app.get("/api/caregiver/{patient_id}")
 def get_caregiver_view(patient_id: str):
-    """
-    Caregiver portal view.
-    Zero donor PII is exposed - only confirmation count and peace of mind timeline.
-    """
     if patient_id not in db.patients:
         raise HTTPException(status_code=404, detail="Patient not found")
 
     patient = db.patients[patient_id]
-    # Upcoming events
     p_events = [e for e in db.events.values() if e["patient_id"] == patient_id and e["planned_date"] >= date.today().isoformat()]
     p_events.sort(key=lambda x: x["planned_date"])
     
@@ -229,7 +220,6 @@ def get_caregiver_view(patient_id: str):
 # 3. Donor Registry & Donor Portal
 @app.get("/api/donors")
 def get_donors(limit: int = 50):
-    """Donor registry list with eligibility indicators."""
     donors_list = list(db.donors.values())[:limit]
     res = []
     for d in donors_list:
@@ -247,15 +237,10 @@ def get_donors(limit: int = 50):
 
 @app.get("/api/donor-portal/{donor_id}")
 def get_donor_portal(donor_id: str):
-    """
-    Donor self-service view.
-    Zero patient PII revealed.
-    """
     if donor_id not in db.donors:
         raise HTTPException(status_code=404, detail="Donor not found")
     donor = db.donors[donor_id]
     
-    # Invitations
     d_invites = [inv for inv in db.invitations.values() if inv["donor_id"] == donor_id]
     enriched_invites = []
     for inv in d_invites:
@@ -272,7 +257,6 @@ def get_donor_portal(donor_id: str):
             )
         })
 
-    # Eligibility
     last_don = date.fromisoformat(donor["last_donation_date"]) if donor.get("last_donation_date") else None
     active_def = db.deferrals.get(donor_id)
     elig_from, reason = eligibility_engine.calculate_eligible_from(donor["sex"], last_don, active_def)
@@ -288,10 +272,6 @@ def get_donor_portal(donor_id: str):
 # 4. Matching & Candidate Ranking Console
 @app.post("/api/match")
 def run_match_for_event(req: MatchRequest):
-    """
-    Coordinator Matching Console API.
-    Runs clinical compatibility, eligibility filters, and ranking algorithms.
-    """
     if req.event_id not in db.events:
         raise HTTPException(status_code=404, detail="Event not found")
     
@@ -323,7 +303,6 @@ def run_match_for_event(req: MatchRequest):
 
 @app.post("/api/dispatch-invites")
 async def dispatch_invites(event_id: str, primary_donor_ids: List[str], backup_donor_ids: List[str]):
-    """Creates invitation records for selected primary and backup candidates."""
     if event_id not in db.events:
         raise HTTPException(status_code=404, detail="Event not found")
 
@@ -367,7 +346,6 @@ async def dispatch_invites(event_id: str, primary_donor_ids: List[str], backup_d
         reason=f"Dispatched {len(primary_donor_ids)} primary and {len(backup_donor_ids)} backup invitations"
     )
 
-    # Broadcast event to all open webpages instantly
     await manager.broadcast({
         "type": "INVITATIONS_DISPATCHED",
         "event_id": event_id,
@@ -376,10 +354,9 @@ async def dispatch_invites(event_id: str, primary_donor_ids: List[str], backup_d
 
     return {"status": "success", "invitations": new_invites}
 
-# 5. Invitation Response Workflow (Donor / Coordinator interaction)
+# 5. Invitation Response Workflow
 @app.post("/api/invitations/respond")
 async def respond_to_invitation(req: InvitationAction):
-    """Handles donor accept / decline / coordinator override."""
     if req.invite_id not in db.invitations:
         raise HTTPException(status_code=404, detail="Invitation not found")
 
@@ -420,7 +397,6 @@ async def respond_to_invitation(req: InvitationAction):
         reason=f"Changed status from {old_status} to {inv['status']}"
     )
 
-    # Broadcast status change across caregiver, donor, and coordinator pages
     await manager.broadcast({
         "type": "INVITATION_UPDATED",
         "invite_id": req.invite_id,
@@ -434,7 +410,6 @@ async def respond_to_invitation(req: InvitationAction):
 # 6. Privacy Vault & Audit Logs
 @app.post("/api/privacy/reveal-pii")
 def reveal_pii(req: RevealPIIRequest):
-    """Restricted DPDP-compliant PII access with strict audit recording."""
     data = vault.reveal_pii(
         entity_id=req.entity_id,
         actor_id=req.actor_id,
@@ -448,7 +423,6 @@ def reveal_pii(req: RevealPIIRequest):
 
 @app.get("/api/privacy/audit-logs")
 def get_audit_logs(limit: int = 50):
-    """Retrieve immutable audit logs."""
     return {"logs": audit_logger.get_logs(limit)}
 
 # 7. Rules Configuration (Admin)
@@ -479,9 +453,71 @@ def update_rules(req: RuleUpdateRequest):
 # 8. Simulation & Evaluation API
 @app.get("/api/simulation/evaluate")
 def run_simulation_api(months: int = 6):
-    """Runs 6-month synthetic population time-stepped simulation comparing Reactive vs Proactive."""
     results = run_comparative_simulation(months=months)
     return results
+
+# 9. QoL Features: Demo Quick Simulator & Export Report
+@app.post("/api/qol/trigger-scenario")
+async def trigger_demo_scenario(req: DemoScenarioRequest):
+    if req.scenario == "BATCH_AUTO_MATCH":
+        matched_count = 0
+        for eid, ev in db.events.items():
+            if ev["status"] == "PLANNED":
+                patient = db.patients[ev["patient_id"]]
+                panel = db.panels.get(patient["patient_id"], [])
+                res = matcher_engine.match_for_event(
+                    event=ev,
+                    patient=patient,
+                    donor_pool=list(db.donors.values()),
+                    panel_donor_ids=panel,
+                    active_commitments=db.commitments,
+                    deferrals=db.deferrals,
+                    donations_past_year={}
+                )
+                prim = [d["donor_id"] for d in res["primary_donors"]]
+                for did in prim:
+                    iid = f"INV-{len(db.invitations) + 1:04d}"
+                    db.invitations[iid] = {"invite_id": iid, "event_id": eid, "donor_id": did, "role": "PRIMARY", "status": "ACCEPTED", "sent_at": date.today().isoformat(), "responded_at": date.today().isoformat()}
+                ev["coverage_count"] = len(prim)
+                ev["status"] = "FULLY_COVERED"
+                matched_count += 1
+
+        await manager.broadcast({"type": "INVITATIONS_DISPATCHED", "count": matched_count})
+        return {"status": "success", "message": f"Successfully auto-matched and confirmed {matched_count} upcoming sessions!"}
+
+    elif req.scenario == "SIMULATE_CANCELLATION":
+        accepted = [inv for inv in db.invitations.values() if inv["status"] == "ACCEPTED"]
+        if not accepted:
+            raise HTTPException(status_code=400, detail="No accepted invitation to cancel. Match an event first!")
+        target_inv = accepted[0]
+        target_inv["status"] = "CANCELLED"
+        target_inv["responded_at"] = date.today().isoformat()
+        
+        event = db.events.get(target_inv["event_id"])
+        if event:
+            confirmed = sum(1 for i in db.invitations.values() if i["event_id"] == event["event_id"] and i["status"] in ["ACCEPTED", "CONFIRMED"])
+            event["coverage_count"] = confirmed
+            event["status"] = "PARTIALLY_COVERED"
+
+        audit_logger.log(
+            actor_id="SIMULATOR",
+            role="SYSTEM",
+            action="SIMULATED_DONOR_CANCEL",
+            entity="INVITATION",
+            entity_id=target_inv["invite_id"],
+            reason="Demonstration of real-time Escalation Engine fallback trigger"
+        )
+
+        await manager.broadcast({
+            "type": "INVITATION_UPDATED",
+            "invite_id": target_inv["invite_id"],
+            "action": "CANCEL",
+            "event_id": target_inv["event_id"],
+            "coverage_count": event.get("coverage_count") if event else 0
+        })
+        return {"status": "success", "message": f"Donor {target_inv['donor_id']} cancelled. Event {target_inv['event_id']} now triggers auto-escalation alert!"}
+
+    raise HTTPException(status_code=400, detail="Unknown scenario")
 
 # Serve UI Static Assets
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -490,7 +526,6 @@ PAGES_DIR = os.path.join(BASE_DIR, "..", "frontend", "pages")
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# Directly redirect root / to the Coordinator Console (no central landing hub)
 @app.get("/")
 def serve_root():
     return RedirectResponse(url="/coordinator")
