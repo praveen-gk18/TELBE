@@ -479,29 +479,34 @@ def run_simulation_api(months: int = 6):
     return results
 
 # Serve UI Static Assets
-app.mount("/static", StaticFiles(directory="/home/user/TELBE/frontend/static"), name="static")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_DIR = os.path.join(BASE_DIR, "..", "frontend", "static")
+PAGES_DIR = os.path.join(BASE_DIR, "..", "frontend", "pages")
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/")
 def serve_index():
-    return FileResponse("/home/user/TELBE/frontend/static/index.html")
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 @app.get("/coordinator")
 def serve_coordinator():
-    return FileResponse("/home/user/TELBE/frontend/pages/coordinator.html")
+    return FileResponse(os.path.join(PAGES_DIR, "coordinator.html"))
 
 @app.get("/caregiver")
 def serve_caregiver():
-    return FileResponse("/home/user/TELBE/frontend/pages/caregiver.html")
+    return FileResponse(os.path.join(PAGES_DIR, "caregiver.html"))
 
 @app.get("/donor")
 def serve_donor():
-    return FileResponse("/home/user/TELBE/frontend/pages/donor.html")
+    return FileResponse(os.path.join(PAGES_DIR, "donor.html"))
 
 @app.get("/simulation")
 def serve_simulation():
-    return FileResponse("/home/user/TELBE/frontend/pages/simulation.html")
+    return FileResponse(os.path.join(PAGES_DIR, "simulation.html"))
 
 @app.get("/admin")
 def serve_admin():
-    return FileResponse("/home/user/TELBE/frontend/pages/admin.html")
+    return FileResponse(os.path.join(PAGES_DIR, "admin.html"))
+
 
