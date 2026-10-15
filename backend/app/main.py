@@ -1,11 +1,13 @@
 """FastAPI entrypoint and REST APIs for TELBE / Beyond Emergency Transfusion System."""
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from datetime import date, timedelta
+import asyncio
+import json
 import os
 
 from app.privacy.vault import PrivacyVault, AuditLogger
@@ -17,6 +19,28 @@ from app.services.matcher import MatcherEngine
 from app.services.notifier import NotifierService
 from app.services.escalation import EscalationEngine
 from app.services.simulation import run_comparative_simulation
+
+# Connection Manager for real-time WebSockets
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: Dict[str, Any]):
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(message))
+            except Exception:
+                self.disconnect(connection)
+
+manager = ConnectionManager()
 
 # Initialize Core Services
 app = FastAPI(
@@ -72,7 +96,21 @@ class RuleUpdateRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "app": "Beyond Emergency Transfusion System", "timestamp": date.today().isoformat()}
+    return {"status": "ok", "app": "Beyond Emergency Transfusion System", "timestamp": date.today().isoformat(), "active_clients": len(manager.active_connections)}
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive with heartbeat
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text(json.dumps({"type": "PONG", "timestamp": date.today().isoformat()}))
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
 
 # 1. Events & Forecaster
 @app.get("/api/events")
@@ -279,7 +317,7 @@ def run_match_for_event(req: MatchRequest):
     return result
 
 @app.post("/api/dispatch-invites")
-def dispatch_invites(event_id: str, primary_donor_ids: List[str], backup_donor_ids: List[str]):
+async def dispatch_invites(event_id: str, primary_donor_ids: List[str], backup_donor_ids: List[str]):
     """Creates invitation records for selected primary and backup candidates."""
     if event_id not in db.events:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -323,11 +361,19 @@ def dispatch_invites(event_id: str, primary_donor_ids: List[str], backup_donor_i
         entity_id=event_id,
         reason=f"Dispatched {len(primary_donor_ids)} primary and {len(backup_donor_ids)} backup invitations"
     )
+
+    # Broadcast event to all open webpages instantly
+    await manager.broadcast({
+        "type": "INVITATIONS_DISPATCHED",
+        "event_id": event_id,
+        "count": len(new_invites)
+    })
+
     return {"status": "success", "invitations": new_invites}
 
 # 5. Invitation Response Workflow (Donor / Coordinator interaction)
 @app.post("/api/invitations/respond")
-def respond_to_invitation(req: InvitationAction):
+async def respond_to_invitation(req: InvitationAction):
     """Handles donor accept / decline / coordinator override."""
     if req.invite_id not in db.invitations:
         raise HTTPException(status_code=404, detail="Invitation not found")
@@ -341,7 +387,6 @@ def respond_to_invitation(req: InvitationAction):
         inv["status"] = "ACCEPTED"
         inv["responded_at"] = today_str
         if event:
-            # Recompute coverage
             confirmed = sum(1 for i in db.invitations.values() if i["event_id"] == inv["event_id"] and i["status"] in ["ACCEPTED", "CONFIRMED"])
             event["coverage_count"] = confirmed
             if confirmed >= event["units_required"]:
@@ -369,6 +414,15 @@ def respond_to_invitation(req: InvitationAction):
         entity_id=req.invite_id,
         reason=f"Changed status from {old_status} to {inv['status']}"
     )
+
+    # Broadcast status change across caregiver, donor, and coordinator pages
+    await manager.broadcast({
+        "type": "INVITATION_UPDATED",
+        "invite_id": req.invite_id,
+        "action": req.action,
+        "event_id": inv["event_id"],
+        "coverage_count": event.get("coverage_count") if event else 0
+    })
 
     return {"status": "success", "invitation": inv, "event": event}
 

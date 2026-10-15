@@ -184,5 +184,19 @@
   </footer>
 
   <script src="/static/app.js"></script>
+  <script src="/static/sync.js"></script>
+  <script>
+    function refreshCurrentPageData() {
+      loadEvents();
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEvents();
+      initRealtimeSync((msg) => {
+        if (msg.type === 'INVITATIONS_DISPATCHED' || msg.type === 'INVITATION_UPDATED') {
+          loadEvents();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

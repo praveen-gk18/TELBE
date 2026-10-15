@@ -175,10 +175,17 @@
   </footer>
 
   <script src="/static/app.js"></script>
+  <script src="/static/sync.js"></script>
   <script>
+    function refreshCurrentPageData() {
+      loadAuditLogs();
+    }
     document.addEventListener('DOMContentLoaded', () => {
       loadRules();
       loadAuditLogs();
+      initRealtimeSync((msg) => {
+        loadAuditLogs();
+      });
     });
   </script>
 </body>

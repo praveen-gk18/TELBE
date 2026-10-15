@@ -99,9 +99,21 @@
   </footer>
 
   <script src="/static/app.js"></script>
+  <script src="/static/sync.js"></script>
   <script>
+    function refreshCurrentPageData() {
+      const select = document.getElementById('cg-patient-select');
+      if (select && select.value) {
+        loadCaregiverView(select.value);
+      }
+    }
     document.addEventListener('DOMContentLoaded', () => {
       populateCaregiverDropdown();
+      initRealtimeSync((msg) => {
+        if (msg.type === 'INVITATIONS_DISPATCHED' || msg.type === 'INVITATION_UPDATED') {
+          refreshCurrentPageData();
+        }
+      });
     });
   </script>
 </body>
