@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donor App | Beyond Emergency</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+      <a href="/" class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <i class="fa-solid fa-user text-xl"></i>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-800 bg-clip-text text-transparent">BEYOND EMERGENCY</span>
+          <span class="block text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Donor Dedicated Webpage</span>
+        </div>
+      </a>
+
+      <!-- Page Switcher -->
+      <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-semibold">
+        <a href="/coordinator" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-check text-rose-600"></i> Coordinator
+        </a>
+        <a href="/caregiver" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-heart-pulse text-emerald-600"></i> Caregiver
+        </a>
+        <a href="/donor" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-user"></i> Donor
+        </a>
+        <a href="/simulation" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-purple-600"></i> Simulation
+        </a>
+        <a href="/admin" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-slate-600"></i> Admin
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="bg-indigo-900 text-indigo-100 py-2 px-4 text-xs text-center font-medium flex items-center justify-center gap-2">
+    <i class="fa-solid fa-circle text-emerald-400 text-[8px] animate-pulse"></i>
+    <span><strong>Donor Portal Webpage:</strong> Connected via <code>/api/donor-portal/{donor_id}</code> & <code>/api/invitations/respond</code></span>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-indigo-700 to-blue-800 rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">Dedicated Blood Donor Panel</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Welcome, <span id="donor-portal-name">DON-0002</span></h2>
+        <p class="text-indigo-100 text-sm mt-1 max-w-xl">
+          Advance invitations planned weeks ahead. Protect your health with strict national donation intervals.
+        </p>
+      </div>
+      <div>
+        <label class="block text-xs text-indigo-200 mb-1">Switch Donor Profile:</label>
+        <select id="donor-select" onchange="loadDonorPortal(this.value)" class="bg-white/10 border border-white/30 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <!-- Populated dynamically -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Eligibility & Badges -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">Blood Group & Phenotype</p>
+        <div class="flex items-center gap-2 mt-2">
+          <span id="donor-bg-badge" class="px-3 py-1 rounded-lg text-lg font-black bg-rose-100 text-rose-700">B+</span>
+          <span id="donor-pheno-badge" class="text-xs font-mono text-slate-600 bg-slate-100 px-2 py-1 rounded">Rh C+ c+ Kell-</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">National Eligibility Status</p>
+        <div class="mt-2 flex items-center gap-2">
+          <span id="donor-elig-status" class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">ELIGIBLE</span>
+          <span id="donor-elig-date" class="text-xs text-slate-500 font-medium">Ready today</span>
+        </div>
+        <p id="donor-elig-reason" class="text-xs text-slate-400 mt-1">90-day whole blood interval maintained</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase">Historical Reliability</p>
+        <div class="mt-2 flex items-center gap-2">
+          <span id="donor-showup-rate" class="text-2xl font-bold text-indigo-600">96%</span>
+          <span class="text-xs text-slate-500">Show-up & adherence history</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Invitations -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-envelope-open-text text-indigo-600"></i> Upcoming Advance Transfusion Requests
+      </h3>
+      <div id="donor-invites-list" class="space-y-4">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    Beyond Emergency Thalassemia Transfusion System &bull; Single FastAPI Process Server
+  </footer>
+
+  <script src="/static/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      populateDonorDropdown();
+    });
+  </script>
+</body>
+</html>

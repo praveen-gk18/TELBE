@@ -430,3 +430,24 @@ app.mount("/static", StaticFiles(directory="/home/user/TELBE/frontend/static"), 
 @app.get("/")
 def serve_index():
     return FileResponse("/home/user/TELBE/frontend/static/index.html")
+
+@app.get("/coordinator")
+def serve_coordinator():
+    return FileResponse("/home/user/TELBE/frontend/pages/coordinator.html")
+
+@app.get("/caregiver")
+def serve_caregiver():
+    return FileResponse("/home/user/TELBE/frontend/pages/caregiver.html")
+
+@app.get("/donor")
+def serve_donor():
+    return FileResponse("/home/user/TELBE/frontend/pages/donor.html")
+
+@app.get("/simulation")
+def serve_simulation():
+    return FileResponse("/home/user/TELBE/frontend/pages/simulation.html")
+
+@app.get("/admin")
+def serve_admin():
+    return FileResponse("/home/user/TELBE/frontend/pages/admin.html")
+
