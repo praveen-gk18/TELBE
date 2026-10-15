@@ -44,7 +44,7 @@ manager = ConnectionManager()
 
 # Initialize Core Services
 app = FastAPI(
-    title="Beyond Emergency - Proactive Thalassemia Transfusion System",
+    title="TELBE",
     description="Predictive scheduling, phenotype & compatibility matching, and proactive donor confirmation.",
     version="1.0.0"
 )
@@ -111,6 +111,10 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
     except Exception:
         manager.disconnect(websocket)
+
+@app.get("/")
+def serve_root():
+    return RedirectResponse(url="/coordinator")
 
 # 1. Events & Forecaster
 @app.get("/api/events")
