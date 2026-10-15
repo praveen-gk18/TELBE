@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beyond Emergency | Proactive Thalassemia Transfusion System</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .badge-covered { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-partial { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-risk { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Top Header Navigation -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <!-- Logo & Branding -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-red-500 flex items-center justify-center text-white shadow-md shadow-rose-200">
+            <i class="fa-solid fa-droplet text-xl"></i>
+          </div>
+          <div>
+            <span class="text-xl font-extrabold bg-gradient-to-r from-rose-600 to-red-800 bg-clip-text text-transparent">BEYOND EMERGENCY</span>
+            <span class="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full border border-rose-200">Thalassemia Proactive Care</span>
+          </div>
+        </div>
+
+        <!-- Role Selector / Tabs -->
+        <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl text-sm font-medium">
+          <button onclick="switchTab('coordinator')" id="tab-coordinator" class="nav-tab px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">
+            <i class="fa-solid fa-calendar-check mr-1.5 text-rose-600"></i><span class="hidden md:inline">Coordinator</span> Dashboard
+          </button>
+          <button onclick="switchTab('caregiver')" id="tab-caregiver" class="nav-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+            <i class="fa-solid fa-heart-pulse mr-1.5 text-emerald-600"></i>Caregiver <span class="hidden md:inline">View</span>
+          </button>
+          <button onclick="switchTab('donor')" id="tab-donor" class="nav-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+            <i class="fa-solid fa-user mr-1.5 text-indigo-600"></i>Donor <span class="hidden md:inline">App</span>
+          </button>
+          <button onclick="switchTab('simulation')" id="tab-simulation" class="nav-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+            <i class="fa-solid fa-chart-line mr-1.5 text-purple-600"></i>Simulation <span class="hidden md:inline">& Evaluation</span>
+          </button>
+          <button onclick="switchTab('admin')" id="tab-admin" class="nav-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+            <i class="fa-solid fa-shield-halved mr-1.5 text-slate-600"></i>Admin & Audit
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Subheader Core Motto -->
+  <div class="bg-gradient-to-r from-rose-900 via-rose-800 to-slate-900 text-white py-2.5 px-4 text-xs sm:text-sm text-center font-medium shadow-inner flex items-center justify-center gap-2">
+    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+    <span><strong>Core Idea:</strong> If a transfusion can be predicted, finding donors for it should be planned ahead and not become an emergency.</span>
+  </div>
+
+  <!-- Main View Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- 1. COORDINATOR DASHBOARD TAB -->
+    <!-- ========================================== -->
+    <section id="view-coordinator" class="space-y-6">
+      <!-- Quick Status Metric Banners -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Thalassemia Patients</p>
+            <h3 id="stat-patients-count" class="text-2xl font-bold text-slate-900 mt-1">5</h3>
+            <p class="text-xs text-slate-400 mt-1">100% on 90-day forecast care plan</p>
+          </div>
+          <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-hospital-user"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Upcoming Transfusions (60d)</p>
+            <h3 id="stat-events-count" class="text-2xl font-bold text-slate-900 mt-1">15</h3>
+            <p class="text-xs text-emerald-600 font-medium mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Projected automatically</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-calendar-days"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">T-3 Coverage Rate</p>
+            <h3 id="stat-t3-coverage" class="text-2xl font-bold text-emerald-600 mt-1">93.8%</h3>
+            <p class="text-xs text-slate-500 mt-1">Confirmed &ge; 72 hours early</p>
+          </div>
+          <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-shield-heart"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Eligible Donors in Pool</p>
+            <h3 id="stat-donors-count" class="text-2xl font-bold text-slate-900 mt-1">60</h3>
+            <p class="text-xs text-indigo-600 font-medium mt-1">90/120-day interval enforced</p>
+          </div>
+          <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-hand-holding-droplet"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Schedule Grid & Matching Table -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Upcoming Transfusion Schedule & Coverage Console</h2>
+            <p class="text-xs text-slate-500">Color-coded: 🟢 Fully Covered (100%), 🟡 Partial Coverage, 🔴 At Risk (Inside D-3 without full match)</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="loadEvents()" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-100 text-sm">
+            <thead class="bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider text-left">
+              <tr>
+                <th class="py-3 px-6">Event ID & Planned Date</th>
+                <th class="py-3 px-6">Patient (Pseudonym)</th>
+                <th class="py-3 px-6">Blood Group</th>
+                <th class="py-3 px-6">Units Req.</th>
+                <th class="py-3 px-6">Coverage Status</th>
+                <th class="py-3 px-6">Timeline Stage</th>
+                <th class="py-3 px-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="events-table-body" class="divide-y divide-slate-100">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 2. CAREGIVER VIEW TAB -->
+    <!-- ========================================== -->
+    <section id="view-caregiver" class="hidden space-y-6">
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">Caregiver Peace-Of-Mind Portal</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Transfusion Schedule for <span id="cg-patient-name" class="underline decoration-teal-300">PT-0042 (Aarav)</span></h2>
+            <p class="text-emerald-100 text-sm mt-1 max-w-xl">
+              Donors are arranged and confirmed proactively in advance by the coordination center. 
+              No last-minute scrambling or panicked emergency blood calls.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="cg-patient-select" onchange="loadCaregiverView(this.value)" class="bg-white/10 border border-white/30 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white">
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Highlight Banner for Next Upcoming Transfusion -->
+      <div id="cg-next-card" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <!-- Populated via JS -->
+      </div>
+
+      <!-- Care Plan Timeline -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-teal-600"></i> Next 90-Day Projected Transfusion Calendar
+        </h3>
+        <div id="cg-timeline-list" class="space-y-4">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+      <!-- Privacy Assurance for Family -->
+      <div class="p-4 bg-slate-100 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-3">
+        <i class="fa-solid fa-user-shield text-slate-500 text-lg mt-0.5"></i>
+        <div>
+          <strong>Privacy Safeguard:</strong> Donors never see your child's real name, medical files, or diagnosis. All communication and coordination is strictly handled via the verified clinical center team.
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 3. DONOR APP TAB -->
+    <!-- ========================================== -->
+    <section id="view-donor" class="hidden space-y-6">
+      <div class="bg-gradient-to-r from-indigo-700 to-blue-800 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">Volunteer Donor Dashboard</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Welcome, <span id="donor-portal-name">Karthik (DON-0002)</span></h2>
+            <p class="text-indigo-100 text-sm mt-1 max-w-xl">
+              You are part of a dedicated life-saving transfusion panel. Your requests are planned weeks in advance to respect your personal schedule.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-indigo-200">Switch Donor:</span>
+            <select id="donor-select" onchange="loadDonorPortal(this.value)" class="bg-white/10 border border-white/30 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donor Eligibility Status Card -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500 uppercase">Blood Group & Phenotype</p>
+          <div class="flex items-center gap-2 mt-2">
+            <span id="donor-bg-badge" class="px-3 py-1 rounded-lg text-lg font-black bg-rose-100 text-rose-700">B+</span>
+            <span id="donor-pheno-badge" class="text-xs font-mono text-slate-600 bg-slate-100 px-2 py-1 rounded">Rh C+ c+ Kell-</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500 uppercase">National Eligibility Status</p>
+          <div class="mt-2 flex items-center gap-2">
+            <span id="donor-elig-status" class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">ELIGIBLE</span>
+            <span id="donor-elig-date" class="text-xs text-slate-500 font-medium">Ready today</span>
+          </div>
+          <p id="donor-elig-reason" class="text-xs text-slate-400 mt-1">90-day whole blood interval maintained</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs font-semibold text-slate-500 uppercase">Reliability Score</p>
+          <div class="mt-2 flex items-center gap-2">
+            <span id="donor-showup-rate" class="text-2xl font-bold text-indigo-600">96%</span>
+            <span class="text-xs text-slate-500">Show-up & adherence history</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Invitations List -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-envelope-open-text text-indigo-600"></i> Advance Transfusion Invitations
+          </h3>
+          <span class="text-xs text-slate-500">Zero child PII disclosed</span>
+        </div>
+        
+        <div id="donor-invites-list" class="space-y-4">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 4. SIMULATION & EVALUATION TAB -->
+    <!-- ========================================== -->
+    <section id="view-simulation" class="hidden space-y-6">
+      <div class="bg-gradient-to-r from-purple-800 to-indigo-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">Comparative Head-To-Head Evaluation</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Reactive Baseline vs. Proactive Planning</h2>
+            <p class="text-purple-100 text-sm mt-1 max-w-2xl">
+              Time-stepped simulation of 50 synthetic thalassemia patients and 500 donors across 6 months. 
+              Proves how advance matching completely eradicates emergency scrambles.
+            </p>
+          </div>
+          <div>
+            <button onclick="runSimulation()" id="btn-run-sim" class="px-5 py-2.5 bg-white text-purple-900 hover:bg-purple-50 font-bold rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+              <i class="fa-solid fa-play text-purple-600"></i> Run 6-Month Simulation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evaluation Metrics Comparison Cards -->
+      <div id="sim-metrics-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Dynamically loaded -->
+      </div>
+
+      <!-- Monthly Coverage Comparison Breakdown -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-chart-column text-purple-600"></i> Monthly Coverage Trend Comparison (%)
+        </h3>
+        <div id="sim-monthly-bars" class="space-y-4">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 5. ADMIN & AUDIT LOG TAB -->
+    <!-- ========================================== -->
+    <section id="view-admin" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Configurable Eligibility Rules -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center gap-2 border-b pb-3">
+            <i class="fa-solid fa-sliders text-rose-600 text-lg"></i>
+            <h3 class="text-base font-bold text-slate-900">National Eligibility Rules</h3>
+          </div>
+          <p class="text-xs text-slate-500">Configurable parameters according to NBTC / State Blood Transfusion Council regulations.</p>
+
+          <form id="rules-form" onsubmit="saveRules(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700">Male Donation Interval (days)</label>
+              <input type="number" id="rule-male-interval" class="mt-1 w-full border border-slate-200 rounded-lg p-2" value="90">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700">Female Donation Interval (days)</label>
+              <input type="number" id="rule-female-interval" class="mt-1 w-full border border-slate-200 rounded-lg p-2" value="120">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-semibold text-slate-700">Min Age (years)</label>
+                <input type="number" id="rule-min-age" class="mt-1 w-full border border-slate-200 rounded-lg p-2" value="18">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700">Max Age (years)</label>
+                <input type="number" id="rule-max-age" class="mt-1 w-full border border-slate-200 rounded-lg p-2" value="65">
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700">Minimum Body Weight (kg)</label>
+              <input type="number" id="rule-min-weight" step="0.5" class="mt-1 w-full border border-slate-200 rounded-lg p-2" value="45.0">
+            </div>
+            <button type="submit" class="w-full mt-2 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition">
+              Save & Apply Rules
+            </button>
+          </form>
+        </div>
+
+        <!-- Privacy Vault PII Reveal Demonstration -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center gap-2 border-b pb-3">
+            <i class="fa-solid fa-key text-amber-500 text-lg"></i>
+            <h3 class="text-base font-bold text-slate-900">Encrypted PII Vault Reveal</h3>
+          </div>
+          <p class="text-xs text-slate-500">Clinical tables only store pseudonyms like <code>PT-0042</code>. Only authorized coordinators may unlock true identity with mandatory reason logging.</p>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700">Entity ID</label>
+              <input type="text" id="pii-entity-id" class="mt-1 w-full border border-slate-200 rounded-lg p-2 font-mono" value="PT-0042">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700">Access Reason (mandatory for audit)</label>
+              <input type="text" id="pii-reason" class="mt-1 w-full border border-slate-200 rounded-lg p-2" placeholder="e.g. Cross-matching verification with Apollo blood bank">
+            </div>
+            <button onclick="requestRevealPII()" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition">
+              Unlock Protected PII
+            </button>
+            <div id="pii-result-box" class="hidden p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1 font-mono text-xs text-slate-800">
+              <!-- Revealed result -->
+            </div>
+          </div>
+        </div>
+
+        <!-- DPDP Compliance Badges -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center gap-2 border-b pb-3">
+            <i class="fa-solid fa-lock text-emerald-600 text-lg"></i>
+            <h3 class="text-base font-bold text-slate-900">DPDP Act, 2023 Compliance</h3>
+          </div>
+          <ul class="text-xs space-y-2 text-slate-600">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+              <span><strong>Pseudonymisation:</strong> Donors and patients segregated from identities.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+              <span><strong>Masked Contact:</strong> No direct phone exchange; anonymised relays.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+              <span><strong>Zero Commercialisation:</strong> Unpaid, voluntary blood donation only.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+              <span><strong>Immutable Audit Log:</strong> Every match, view and reveal logged.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Immutable Audit Trail Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-slate-600"></i> Immutable Audit Trail
+          </h3>
+          <button onclick="loadAuditLogs()" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-100 text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold uppercase text-left">
+              <tr>
+                <th class="py-3 px-4">Log ID</th>
+                <th class="py-3 px-4">Timestamp (UTC)</th>
+                <th class="py-3 px-4">Actor & Role</th>
+                <th class="py-3 px-4">Action</th>
+                <th class="py-3 px-4">Entity</th>
+                <th class="py-3 px-4">Reason / Details</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body" class="divide-y divide-slate-100 font-mono">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MATCHING & ALLOCATION MODAL -->
+  <div id="modal-match" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-dna text-rose-600"></i> Candidate Match & Score Breakdown Console
+          </h3>
+          <p id="modal-match-subtitle" class="text-xs text-slate-500">Scoring breakdown based on compatibility, continuity, reliability & fairness.</p>
+        </div>
+        <button onclick="closeMatchModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 flex-1">
+        <!-- Event Summary Box -->
+        <div id="modal-event-summary" class="bg-rose-50 border border-rose-100 rounded-xl p-4 text-xs text-rose-900 flex flex-wrap gap-4 items-center">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Primary Candidates -->
+        <div>
+          <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Primary Candidates (Required Units)
+          </h4>
+          <div id="modal-primary-candidates" class="space-y-2">
+            <!-- Cards populated via JS -->
+          </div>
+        </div>
+
+        <!-- Backup Candidates -->
+        <div>
+          <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Backup Candidates (Safety Net)
+          </h4>
+          <div id="modal-backup-candidates" class="space-y-2">
+            <!-- Cards populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <button onclick="closeMatchModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100">Cancel</button>
+        <button id="modal-btn-dispatch" onclick="dispatchInvitesFromModal()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-200 flex items-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i> Dispatch Invitations
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENT DETAIL / ESCALATION MODAL -->
+  <div id="modal-detail" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 id="modal-detail-title" class="text-lg font-bold text-slate-900">Event Detail</h3>
+          <p class="text-xs text-slate-500">Current invitations and real-time escalation status</p>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 flex-1" id="modal-detail-body">
+        <!-- Detail and escalation contents -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    Beyond Emergency Thalassemia Transfusion Management Platform &bull; DPDP Act 2023 Aligned &bull; Simulated Clinical Environment
+  </footer>
+
+  <!-- Frontend Logic Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
