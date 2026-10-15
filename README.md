@@ -1,4 +1,4 @@
-# Beyond Emergency: Proactive Thalassemia Transfusion System
+# TELBE: Proactive Thalassemia Transfusion System
 
 > **Core Idea:** *If a transfusion can be predicted, finding donors for it should be planned ahead and not become an emergency.*
 
