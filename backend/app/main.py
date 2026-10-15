@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from datetime import date, timedelta
@@ -96,7 +96,12 @@ class RuleUpdateRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "app": "Beyond Emergency Transfusion System", "timestamp": date.today().isoformat(), "active_clients": len(manager.active_connections)}
+    return {
+        "status": "ok",
+        "app": "Beyond Emergency Transfusion System",
+        "timestamp": date.today().isoformat(),
+        "active_clients": len(manager.active_connections)
+    }
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -485,9 +490,10 @@ PAGES_DIR = os.path.join(BASE_DIR, "..", "frontend", "pages")
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+# Directly redirect root / to the Coordinator Console (no central landing hub)
 @app.get("/")
-def serve_index():
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+def serve_root():
+    return RedirectResponse(url="/coordinator")
 
 @app.get("/coordinator")
 def serve_coordinator():
@@ -508,5 +514,3 @@ def serve_simulation():
 @app.get("/admin")
 def serve_admin():
     return FileResponse(os.path.join(PAGES_DIR, "admin.html"))
-
-
