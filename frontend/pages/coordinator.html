@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coordinator Dashboard | Beyond Emergency</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .badge-covered { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-partial { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-risk { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+      <a href="/" class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-red-500 flex items-center justify-center text-white shadow-md shadow-rose-200">
+          <i class="fa-solid fa-droplet text-xl"></i>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold bg-gradient-to-r from-rose-600 to-red-800 bg-clip-text text-transparent">BEYOND EMERGENCY</span>
+          <span class="block text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Single FastAPI Unified Server</span>
+        </div>
+      </a>
+
+      <!-- Page Switcher -->
+      <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-semibold">
+        <a href="/coordinator" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-check"></i> Coordinator
+        </a>
+        <a href="/caregiver" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-heart-pulse text-emerald-600"></i> Caregiver
+        </a>
+        <a href="/donor" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-user text-indigo-600"></i> Donor
+        </a>
+        <a href="/simulation" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-purple-600"></i> Simulation
+        </a>
+        <a href="/admin" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-slate-600"></i> Admin
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="bg-rose-900 text-rose-100 py-2 px-4 text-xs text-center font-medium flex items-center justify-center gap-2">
+    <i class="fa-solid fa-circle text-emerald-400 text-[8px] animate-pulse"></i>
+    <span><strong>Coordinator Console Webpage:</strong> Connected to FastAPI backend via <code>/api/events</code>, <code>/api/match</code>, & <code>/api/dispatch-invites</code></span>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+    <!-- Stat Banners -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase">Active Patients</p>
+          <h3 id="stat-patients" class="text-2xl font-bold text-slate-900 mt-1">5</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Recurring care plans</p>
+        </div>
+        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-hospital-user"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase">60d Transfusions</p>
+          <h3 id="stat-events" class="text-2xl font-bold text-slate-900 mt-1">15</h3>
+          <p class="text-xs text-emerald-600 mt-0.5">Projected automatically</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase">T-3 Coverage Rate</p>
+          <h3 class="text-2xl font-bold text-emerald-600 mt-1">94.2%</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Confirmed &ge; 72h early</p>
+        </div>
+        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-shield-heart"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase">Total Donor Pool</p>
+          <h3 id="stat-donors" class="text-2xl font-bold text-indigo-600 mt-1">60</h3>
+          <p class="text-xs text-slate-500 mt-0.5">NBTC interval tracked</p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-hand-holding-droplet"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfusion Schedule Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Transfusion Events & Proactive Coverage</h2>
+          <p class="text-xs text-slate-500">🟢 Fully Covered, 🟡 Partial (Finding Backups), 🔴 At Risk (Inside D-3 window)</p>
+        </div>
+        <button onclick="loadEvents()" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-rotate-right"></i> Refresh
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-100 text-sm">
+          <thead class="bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider text-left">
+            <tr>
+              <th class="py-3 px-6">Event & Date</th>
+              <th class="py-3 px-6">Patient</th>
+              <th class="py-3 px-6">Blood Group</th>
+              <th class="py-3 px-6">Units Req.</th>
+              <th class="py-3 px-6">Coverage Status</th>
+              <th class="py-3 px-6">Timeline Stage</th>
+              <th class="py-3 px-6 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="events-table-body" class="divide-y divide-slate-100">
+            <!-- Loaded via API -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MATCH MODAL -->
+  <div id="modal-match" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-dna text-rose-600"></i> Proactive Donor Matching Console
+          </h3>
+          <p id="modal-match-subtitle" class="text-xs text-slate-500">Ranks donors by phenotype, continuity, reliability & fairness.</p>
+        </div>
+        <button onclick="closeMatchModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-6 flex-1">
+        <div id="modal-event-summary" class="bg-rose-50 border border-rose-100 rounded-xl p-4 text-xs text-rose-900 flex flex-wrap gap-4 items-center"></div>
+        <div>
+          <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Primary Candidates (Required Units)</h4>
+          <div id="modal-primary-candidates" class="space-y-2"></div>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Backup Candidates (Safety Net)</h4>
+          <div id="modal-backup-candidates" class="space-y-2"></div>
+        </div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <button onclick="closeMatchModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">Cancel</button>
+        <button onclick="dispatchInvitesFromModal()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i> Dispatch Invitations
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL MODAL -->
+  <div id="modal-detail" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <h3 id="modal-detail-title" class="text-lg font-bold text-slate-900">Event Detail</h3>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4 flex-1" id="modal-detail-body"></div>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    Beyond Emergency Thalassemia Transfusion System &bull; Single FastAPI Process Server
+  </footer>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/sync.js"></script>
+  <script>
+    function refreshCurrentPageData() {
+      loadEvents();
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEvents();
+      initRealtimeSync((msg) => {
+        if (msg.type === 'INVITATIONS_DISPATCHED' || msg.type === 'INVITATION_UPDATED') {
+          loadEvents();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

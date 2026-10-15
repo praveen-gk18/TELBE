@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caregiver Portal | Beyond Emergency</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-16 items-center">
+      <a href="/" class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-200">
+          <i class="fa-solid fa-heart-pulse text-xl"></i>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold bg-gradient-to-r from-emerald-600 to-teal-800 bg-clip-text text-transparent">BEYOND EMERGENCY</span>
+          <span class="block text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Caregiver Dedicated Webpage</span>
+        </div>
+      </a>
+
+      <!-- Page Switcher -->
+      <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-semibold">
+        <a href="/coordinator" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-calendar-check text-rose-600"></i> Coordinator
+        </a>
+        <a href="/caregiver" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-heart-pulse"></i> Caregiver
+        </a>
+        <a href="/donor" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-user text-indigo-600"></i> Donor
+        </a>
+        <a href="/simulation" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-purple-600"></i> Simulation
+        </a>
+        <a href="/admin" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-slate-600"></i> Admin
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="bg-emerald-900 text-emerald-100 py-2 px-4 text-xs text-center font-medium flex items-center justify-center gap-2">
+    <i class="fa-solid fa-circle text-emerald-400 text-[8px] animate-pulse"></i>
+    <span><strong>Caregiver Portal Webpage:</strong> Zero donor PII exposed. Connected via <code>/api/caregiver/{patient_id}</code></span>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">Caregiver Assurance Portal</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold mt-2">Transfusion Schedule for <span id="cg-patient-name" class="underline decoration-teal-300">PT-0042 (Aarav)</span></h2>
+        <p class="text-emerald-100 text-sm mt-1 max-w-xl">
+          Donors are arranged and confirmed proactively in advance by the coordination center. No emergency blood requests.
+        </p>
+      </div>
+      <div>
+        <label class="block text-xs text-emerald-200 mb-1">Select Patient Account:</label>
+        <select id="cg-patient-select" onchange="loadCaregiverView(this.value)" class="bg-white/10 border border-white/30 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+          <!-- Populated dynamically -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Next Transfusion Card -->
+    <div id="cg-next-card" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <!-- Populated via JS -->
+    </div>
+
+    <!-- 90-Day Projected Transfusion Calendar -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-clock-rotate-left text-teal-600"></i> Next 90-Day Projected Transfusion Calendar
+      </h3>
+      <div id="cg-timeline-list" class="space-y-4">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+
+    <!-- Privacy Banner -->
+    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900 flex items-start gap-3">
+      <i class="fa-solid fa-user-shield text-emerald-600 text-lg mt-0.5"></i>
+      <div>
+        <strong>Patient Privacy Guarantee:</strong> Donors never see your child's real name, medical files, or condition. Everything is managed through clinical pseudonyms and coordinated via the blood transfusion center.
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+    Beyond Emergency Thalassemia Transfusion System &bull; Single FastAPI Process Server
+  </footer>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/sync.js"></script>
+  <script>
+    function refreshCurrentPageData() {
+      const select = document.getElementById('cg-patient-select');
+      if (select && select.value) {
+        loadCaregiverView(select.value);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      populateCaregiverDropdown();
+      initRealtimeSync((msg) => {
+        if (msg.type === 'INVITATIONS_DISPATCHED' || msg.type === 'INVITATION_UPDATED') {
+          refreshCurrentPageData();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
