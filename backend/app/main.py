@@ -112,10 +112,6 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception:
         manager.disconnect(websocket)
 
-@app.get("/")
-def serve_root():
-    return RedirectResponse(url="/coordinator")
-
 # 1. Events & Forecaster
 @app.get("/api/events")
 def get_transfusion_events(patient_id: Optional[str] = None):
